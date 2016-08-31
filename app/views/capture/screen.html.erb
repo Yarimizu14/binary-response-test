@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BinaryTest</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <h1>this is BinaryTest page</h1>
+  <img src="data:image/jpeg;base64,<%= @base64 %>">
+  <img id="test">
+  <!--img src="http://192.168.33.10:3000/captures/connect"-->
+  <div id="container"></div>
+  <div id="imgTest"></div>
+  <img id="CaptchaImg" />
+
+  <script type="text/javascript">
+    $.get("/captures/connect", function(data){
+
+      console.log(data);
+      // btoa(data);
+      // atob(data);
+      // $('#test').attr('src', 'data:image/jpeg;base64,' + atob(data));
+
+      $('#test').attr('src', (new ArrayBuffer(data)));
+
+      console.log(data.constructor.name);
+      //data = new ArrayBuffer(data);
+      console.log(data.constructor.name);
+      // var blob = new Blob([data], {type: 'application/octet-binary'});
+      var blob = new Blob([data], {type: 'image/jpg'});
+      var url = URL.createObjectURL(blob);
+      var img = new Image;
+      img.onload = function() {
+            URL.revokeObjectURL(url);
+      };
+      img.src = url;
+      $('#container').append(img);
+
+
+      var fileReader = new FileReader();
+      fileReader.onload = function(fileLoadedEvent) {
+        var srcData = fileLoadedEvent.target.result; // <--- data: base64
+
+        var newImage = document.createElement('img');
+        newImage.src = srcData;
+        $('#container').append(newImage);
+
+        document.getElementById("imgTest").innerHTML = newImage.outerHTML;
+        // alert("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
+        console.log("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
+      }
+      fileReader.readAsDataURL(blob);
+    });
+
+    var loadByXHR = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function(){
+        if (this.readyState == 4 && this.status == 200){
+          var img = document.getElementById("CaptchaImg");
+          var url = window.URL || window.webkitURL;
+          img.src = url.createObjectURL(this.response);
+        }
+      }
+      xhr.open('GET', "/captures/connect");
+      xhr.responseType = 'blob';
+      xhr.send(); 
+    }
+    loadByXHR()
+  </script>
+
+</body>
+</html>
