@@ -1,0 +1,2 @@
+class CaptureController < ApplicationController
+end
